@@ -17,7 +17,7 @@ COPY . .
 RUN ls -l && cd app && ls -l
 
 EXPOSE 5000
-ENTRYPOINT ["python", "app/main.py"]
+ENTRYPOINT ["python3", "app/main.py"]
 
 
 
