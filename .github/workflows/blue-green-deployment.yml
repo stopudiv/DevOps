@@ -16,6 +16,8 @@ jobs:
       PROJECT_ID: ${{ secrets.GCP_PROJECT }}
       GCP_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
       GCP_REGION: us-central1	   # TODO: update to cluster region
+      PROJECT_NUMBER: "$(gcloud projects describe ${PROJECT_ID} --format='get(projectNumber)')"
+
 
     steps:
     - name: Checkout code
@@ -52,8 +54,12 @@ jobs:
       with:
         project_id: '${{ secrets.GCP_PROJECT_ID }}'  # Optional: Set project ID if needed
     - run: |
+        gcloud projects add-iam-policy-binding ${PROJECT_NUMBER} \
+            --member=serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
+             --role=roles/container.developer
         gcloud components install gke-gcloud-auth-plugin
         gcloud container clusters get-credentials "$GCP_CLUSTER" --region "$GCP_REGION"
+
 
     - name: Get the GKE credentials so we can deploy to the cluster
       run: |
