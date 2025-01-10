@@ -54,6 +54,11 @@ jobs:
       with:
         project_id: '${{ secrets.GCP_PROJECT_ID }}'  # Optional: Set project ID if needed
     - run: |
+        gcloud projects add-iam-policy-binding $***PROJECT_ID*** \
+          --member=serviceAccount:$***PROJECT_ID***@cloudbuild.gserviceaccount.com \
+           --role=roles/container.developer
+        gcloud components install gke-gcloud-auth-plugin
+        gcloud container clusters get-credentials "$GCP_CLUSTER" --region "$GCP_REGION"
         gcloud components install gke-gcloud-auth-plugin
         gcloud container clusters get-credentials "$GCP_CLUSTER" --region "$GCP_REGION"
 
