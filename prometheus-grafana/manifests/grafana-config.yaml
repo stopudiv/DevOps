@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+data:
+  dashboard.json: |
+    {
+      "id": null,
+      "title": "New dashboard",
+      "tags": [],
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "version": 0
+    }
