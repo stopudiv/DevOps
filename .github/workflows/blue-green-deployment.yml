@@ -13,9 +13,9 @@ jobs:
         working-directory: ./app
 
     env:
-      PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-      GKE_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
-      GKE_REGION: us-central1	   # TODO: update to cluster region
+      PROJECT_ID: ${{ secrets.GCP_PROJECT }}
+      GCP_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
+      GCP_REGION: us-central1	   # TODO: update to cluster region
 
     steps:
     - name: Checkout code
@@ -53,11 +53,11 @@ jobs:
         project_id: '${{ secrets.GCP_PROJECT_ID }}'  # Optional: Set project ID if needed
     - run: |
         gcloud components install gke-gcloud-auth-plugin
-        gcloud container clusters get-credentials "$GKE_CLUSTER" --region "$GKE_REGION"
+        gcloud container clusters get-credentials "$GCP_CLUSTER" --region "$GCP_REGION"
 
     - name: Get the GKE credentials so we can deploy to the cluster
       run: |
-        gcloud container clusters get-credentials "$GKE_CLUSTER" --region "$GKE_REGION"
+        gcloud container clusters get-credentials "$GCP_CLUSTER" --region "$GCP_REGION"
     
     - name: Configure Docker for Google Container Registry
       run: |
