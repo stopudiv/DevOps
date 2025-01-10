@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-blue
+  labels:
+    app: app
+    version: blue
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: app
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: app
+        version: blue
+    spec:
+      containers:
+        - name: app
+          image: gcr.io/${{secrets.GCP_PROJECT}}/app:blue
+          ports:
+            - containerPort: 5000
