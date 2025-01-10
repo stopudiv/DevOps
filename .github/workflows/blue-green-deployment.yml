@@ -30,13 +30,13 @@ jobs:
 
     - name: Build and push "blue" Docker image
       run: |
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/app:blue .
-        docker push gcr.io/${{ secrets.GCP_PROJECT }}/app:blue
+        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:blue .
+        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:blue
 
     - name: Build and push "green" Docker image
       run: |
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/app:green .
-        docker push gcr.io/${{ secrets.GCP_PROJECT }}/app:green
+        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:green .
+        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:green
 
   deploy:
     runs-on: ubuntu-latest
