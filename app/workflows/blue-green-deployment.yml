@@ -1,0 +1,66 @@
+name: Blue/Green Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v0.4.0
+      with:
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+    - name: Configure Docker for Google Container Registry
+      run: |
+        gcloud auth configure-docker
+
+    - name: Build and push "blue" Docker image
+      run: |
+        docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/app:blue .
+        docker push gcr.io/${{ secrets.GCP_PROJECT }}/app:blue
+
+    - name: Build and push "green" Docker image
+      run: |
+        docker build -t gcr.io/${{ secrets.GCP_PROJECT }}/app:green .
+        docker push gcr.io/${{ secrets.GCP_PROJECT }}/app:green
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v0.4.0
+      with:
+        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+    - name: Get GKE credentials
+      run: |
+        gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --zone ${{ secrets.GKE_ZONE }} --project ${{ secrets.GCP_PROJECT }}
+
+    - name: Deploy Blue
+      run: |
+        kubectl apply -f k8s/deployment-blue.yaml
+        kubectl apply -f k8s/service.yaml
+
+    - name: Deploy Green
+      run: |
+        kubectl apply -f k8s/deployment-green.yaml
+
+    - name: Switch Traffic to Green
+      run: |
+        kubectl patch service app -p '{"spec":{"selector":{"app":"app","version":"green"}}}'
