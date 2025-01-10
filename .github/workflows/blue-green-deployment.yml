@@ -76,12 +76,7 @@ jobs:
    deploy:
     runs-on: ubuntu-latest
     needs: build
-
-    env:
-       PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-       GKE_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
-       GKE_REGION: us-central1	   # TODO: update to cluster region
-
+    
     steps:
      - name: Checkout code
        uses: actions/checkout@v2
@@ -104,6 +99,6 @@ jobs:
        run: |
         kubectl apply -f k8s/overlays/green
 
-    - name: Switch Traffic to Green
-      run: |
+     - name: Switch Traffic to Green
+       run: |
         kubectl patch service app -p '{"spec":{"selector":{"app":"app","version":"green"}}}'
