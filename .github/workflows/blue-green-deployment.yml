@@ -12,6 +12,11 @@ jobs:
       run:
         working-directory: ./app
 
+    env:
+      PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+      GKE_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
+      GKE_REGION: us-central1	   # TODO: update to cluster region
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -71,6 +76,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+
+   env:
+      PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+      GKE_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
+      GKE_REGION: us-central1	   # TODO: update to cluster region
 
     steps:
     - name: Checkout code
