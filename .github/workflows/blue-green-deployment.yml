@@ -72,36 +72,36 @@ jobs:
       run: |
         docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:green .
         docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:green
-
-  deploy:
+   
+   deploy:
     runs-on: ubuntu-latest
     needs: build
 
-   env:
-      PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-      GKE_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
-      GKE_REGION: us-central1	   # TODO: update to cluster region
+    env:
+       PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+       GKE_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
+       GKE_REGION: us-central1	   # TODO: update to cluster region
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+     - name: Checkout code
+       uses: actions/checkout@v2
 
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v0.4.0
-      with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+     - name: Authenticate to Google Cloud
+       uses: google-github-actions/auth@v0.4.0
+       with:
+         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-    - name: Get GKE credentials
-      run: |
+     - name: Get GKE credentials
+       run: |
         gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --zone ${{ secrets.GKE_ZONE }} --project ${{ secrets.GCP_PROJECT }}
 
-    - name: Deploy Blue
-      run: |
+     - name: Deploy Blue
+       run: |
         kubectl apply -f k8s/overlays/blue
         kubectl apply -f k8s/base
 
-    - name: Deploy Green
-      run: |
+     - name: Deploy Green
+       run: |
         kubectl apply -f k8s/overlays/green
 
     - name: Switch Traffic to Green
