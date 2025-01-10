@@ -7,5 +7,5 @@ RUN pip install -r requirements.txt
 
 USER webservice:webservice
 
-EXPOSE 8050
+EXPOSE 5000
 CMD ["python", "hello.py"]
