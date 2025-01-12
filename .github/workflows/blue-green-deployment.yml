@@ -92,7 +92,7 @@ jobs:
 
      - name: Get GKE credentials
        run: |
-        gcloud container clusters get-credentials ${{ secrets.GCP_ZONE }} "$GCP_CLUSTER" --region "$GCP_REGION"
+        gcloud container clusters get-credentials --zone ${{ secrets.GCP_ZONE }} "$GCP_CLUSTER" --region "$GCP_REGION"
         
      - name: Deploy Blue
        run: |
