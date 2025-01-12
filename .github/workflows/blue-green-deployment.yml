@@ -60,7 +60,7 @@ jobs:
         
     - name: Get the GKE credentials so we can deploy to the cluster
       run: |
-        gcloud container clusters get-credentials "$GCP_CLUSTER" --region "$GCP_REGION"
+        gcloud container clusters get-credentials ${{ secrets.GCP_ZONE }} "$GCP_CLUSTER" --region "$GCP_REGION"
     
     - name: Configure Docker for Google Container Registry
       run: |
