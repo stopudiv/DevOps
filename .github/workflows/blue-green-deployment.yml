@@ -69,13 +69,13 @@ jobs:
     - name: Build and push "blue" Docker image
       run: |
         gcloud auth configure-docker us-central1-docker.pkg.dev
-        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:blue1.4 .
-        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:blue1.4
+        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:blue1.5 .
+        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:blue1.5
 
     - name: Build and push "green" Docker image
       run: |
-        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:green1.4 .
-        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:green1.4
+        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:green1.5 .
+        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:green1.5
    
    deploy:
     runs-on: ubuntu-latest
@@ -96,12 +96,12 @@ jobs:
         
      - name: Deploy Blue
        run: |
-        kubectl apply -f k8s/overlays/blue
-        kubectl apply -f k8s/base
+        kubectl apply -f ./app/k8s/overlays/blue
+        kubectl apply -f ./app/k8s/base
 
      - name: Deploy Green
        run: |
-        kubectl apply -f k8s/overlays/green
+        kubectl apply -f ./app/k8s/overlays/green
 
      - name: Switch Traffic to Green
        run: |
