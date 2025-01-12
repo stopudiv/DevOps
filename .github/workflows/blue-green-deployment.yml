@@ -69,13 +69,13 @@ jobs:
     - name: Build and push "blue" Docker image
       run: |
         gcloud auth configure-docker us-central1-docker.pkg.dev
-        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:blue .
-        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:blue
+        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:blue .
+        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:blue
 
     - name: Build and push "green" Docker image
       run: |
-        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:green .
-        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:green
+        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:green .
+        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app/app:green
    
    deploy:
     runs-on: ubuntu-latest
