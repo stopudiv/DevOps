@@ -14,7 +14,7 @@ jobs:
 
     env:
       PROJECT_ID: ${{ secrets.GCP_PROJECT }}
-      GCP_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
+      GCP_CLUSTER: ${{ secrets.GCP_CLUSTER }}    # TODO: update to cluster name
       GCP_REGION: us-central1	   # TODO: update to cluster region
       PROJECT_NUMBER: "$(gcloud projects describe ${PROJECT_ID} --format='get(projectNumber)')"
 
@@ -92,7 +92,7 @@ jobs:
 
      - name: Get GKE credentials
        run: |
-        gcloud container clusters get-credentials "$GKE_CLUSTER" --region "$GKE_REGION"
+        gcloud container clusters get-credentials "$GCP_CLUSTER" --region "$GCP_REGION"
         
      - name: Deploy Blue
        run: |
