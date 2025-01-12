@@ -92,7 +92,7 @@ jobs:
 
      - name: Get GKE credentials
        run: |
-        gcloud container clusters get-credentials --zone us-central1 "$GCP_CLUSTER"
+        gcloud container clusters get-credentials "$GCP_CLUSTER" --zone us-central1 "$PROJECT_ID"
         
      - name: Deploy Blue
        run: |
