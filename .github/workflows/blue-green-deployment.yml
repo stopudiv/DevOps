@@ -77,7 +77,7 @@ jobs:
     needs: build
     
     env:
-      PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+      PROJECT_ID: ${{ secrets.GCP_PROJECT }}
       GKE_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
       GKE_REGION: us-central1	   # TODO: update to cluster region
 
@@ -101,7 +101,7 @@ jobs:
 
     - name: Get the GKE credentials so we can deploy to the cluster
       run: |
-        gcloud container clusters get-credentials "$GKE_CLUSTER" --region "$GKE_REGION"
+        gcloud container clusters get-credentials "$GCP_CLUSTER" --region "$GCP_REGION"
 
     - name: Create namespace & set in Kustomize
       run: |
