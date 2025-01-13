@@ -165,7 +165,7 @@ jobs:
         
         # Patch the service with the new version
         echo "Updating service to use version $newVersion..."
-        kubectl patch service app -n app -p "{\"spec\":{\"selector\":{\"version\":\"$newVersion\"}}}
+        kubectl patch service app -n app -p "{\"spec\":{\"selector\":{\"version\":\"$newVersion\"}}}"
 
 
     - name: Remove old namespace
