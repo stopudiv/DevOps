@@ -127,7 +127,21 @@ jobs:
             echo "NEW_NAMESPACE=python-app-green" >> $GITHUB_ENV
             echo "OLD_NAMESPACE=python-app-blue" >> $GITHUB_ENV
          else
-            echo "Both Blue and Green namespaces are present! Exiting"
+            echo "Both Blue and Green namespaces are present. Establishing the active namespace"
+            PODS_IN_BLUE=$(kubectl get pods -n python-app-blue -l app=app --no-headers 2>/dev/null | wc -l)
+            PODS_IN_GREEN=$(kubectl get pods -n python-app-green -l app=app --no-headers 2>/dev/null | wc -l)
+            if [ "$PODS_IN_BLUE" -gt 0 ]; then
+              echo "The active namespace is $NAMESPACE_BLUE"
+              echo "OLD_NAMESPACE=python-app-blue" >> $GITHUB_ENV
+              echo "NEW_NAMESPACE=python-app-green" >> $GITHUB_ENV
+            elif [ "$PODS_IN_GREEN" -gt 0 ]; then
+              echo "The active namespace is $NAMESPACE_GREEN"
+              echo "OLD_NAMESPACE=python-app-green" >> $GITHUB_ENV
+              echo "NEW_NAMESPACE=python-app-blue" >> $GITHUB_ENV
+            else
+              echo "No active namespace found!"
+              exit 1
+            fi
             exit 1
          fi
 
@@ -136,14 +150,26 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
        cd ./app/k8s
-       kustomize edit set image hello-gitops=$DOCKER_USERNAME/hello-gitops:$GITHUB_SHA
+       kustomize edit set image app=$DOCKER_USERNAME/app:$GITHUB_SHA
        cat kustomization.yaml
     
     - name: Deploy updated Kubernetes resources
       run: |
         kubectl apply -k ./app/k8s/ 
-   
-    
+
+    - name: Switch traffic to the new namespace
+      run: |
+        #Get current version
+        currentVersion=$(kubectl get service app -n app -o=jsonpath='{.spec.selector.version}')
+        
+        # Update the patch version
+        newVersion=$(echo $currentVersion | awk -F. '{$NF = $NF + 1; print $1"."$2"."$3}' | tr -d '[:space:]')
+        
+        # Patch the service with the new version
+        echo "Updating service to use version $newVersion..."
+        kubectl patch service hello-gitops -n hello-gitops -p "{\"spec\":{\"selector\":{\"version\":\"$newVersion\"}}}
+
+
     - name: Remove old namespace
       run: |
         namespacePresentOld=`kubectl get ns | grep ${{ env.OLD_NAMESPACE }} | wc -l`
@@ -151,6 +177,16 @@ jobs:
         then
           kubectl delete ns ${{ env.OLD_NAMESPACE }} --wait=true
         fi
+
+
+    - name: Update service.yaml with the new version
+      run: |
+        echo "Fetching currently new version from service selector..."
+        newVersion=$(kubectl get service app -n app -o=jsonpath='{.spec.selector.version}')
+        echo "Updating service.yaml with version $newVersion..."
+        sed -i "s/version: .*/version: $newVersion/" app/k8s/service.yaml
+        echo "Updated service.yaml:"
+        cat github-actions-samples/k8s/service.yaml
  
     - name: Commit files
       run: |
