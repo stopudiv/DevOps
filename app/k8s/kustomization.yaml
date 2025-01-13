@@ -8,7 +8,7 @@ namespace: app
 images:
 - name: app
   newName: stopudiv/app
-  newTag: 98025756f6e1e489d3bf429ab7ec614f63236562
+  newTag: 0ca9958f11cb583e1443818671add8cb13544828
 - name: hello-gitops
   newName: stopduiv/hello-gitops
   newTag: newesttag
