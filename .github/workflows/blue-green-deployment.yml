@@ -1,106 +1,119 @@
-name: Blue/Green Deployment
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: CI/CD Workflow
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-   build:
+  build:
+
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./app
 
-    env:
-      PROJECT_ID: ${{ secrets.GCP_PROJECT }}
-      GCP_CLUSTER: autopilot-cluster-1    # TODO: update to cluster name
-      GCP_REGION: us-central1	   # TODO: update to cluster region
-      PROJECT_NUMBER: "$(gcloud projects describe ${PROJECT_ID} --format='get(projectNumber)')"
-
-
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v2
+      
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Test with pytest
+      run: |
+        pytest
 
     - name: Set up Docker Buildx
+      id: buildx
       uses: docker/setup-buildx-action@v1
-
-    - uses: docker/login-action@v2 
+      
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+    
+    - uses: docker/login-action@v1 
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
       
     - name: Build and push
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v2
       with:
         context: ./app 
         file: ./app/Dockerfile
         builder: ${{ steps.buildx.outputs.name }}
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/hello-gitops:upd, ${{ secrets.DOCKER_USERNAME }}/hello-gitops:latest
-        platforms: linux/amd64,linux/arm64
+        tags: ${{ secrets.DOCKER_USERNAME }}/app:${{ github.sha }}, ${{ secrets.DOCKER_USERNAME }}/app:latest
         cache-from: type=local,src=/tmp/.buildx-cache
-        cache-to: type=local,dest=/tmp/.buildx-cache
-
-
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v0.4.0
-      with:
-        credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-
-    - name: Set up Cloud SDK and install gke-gcloud-auth-plugin
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: '${{ secrets.GCP_PROJECT_ID }}'  # Optional: Set project ID if needed
-    - run: |
-        gcloud components install gke-gcloud-auth-plugin
-        gcloud container clusters get-credentials "$GCP_CLUSTER" --region "$GCP_REGION"
-
-    - name: Get the GKE credentials so we can deploy to the cluster
-      run: |
-        gcloud container clusters get-credentials "$GCP_CLUSTER" --region "$GCP_REGION"
+        cache-to: type=local,dest=/tmp/.buildx-cache  
+        
+  deploy:
+      runs-on: ubuntu-latest
+      needs: build
     
-    - name: Configure Docker for Google Container Registry
-      run: |
-        gcloud auth configure-docker
+      steps:
+       - name: Checkout code
+         uses: actions/checkout@v2
 
-    - name: Build and push "blue" Docker image
-      run: |
-        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:blue .
-        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:blue
+       - name: Setup Kustomize
+         uses: imranismail/setup-kustomize@v1
+         with:
+          kustomize-version: "3.6.1"
 
-    - name: Build and push "green" Docker image
-      run: |
-        docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:green .
-        docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/app:green
-   
-   deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    
-    steps:
-     - name: Checkout code
-       uses: actions/checkout@v2
 
-     - name: Authenticate to Google Cloud
-       uses: google-github-actions/auth@v0.4.0
-       with:
-         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+       - name: Authenticate to Google Cloud
+         uses: google-github-actions/auth@v0.4.0
+         with:
+           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-     - name: Get GKE credentials
-       run: |
-        gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --zone ${{ secrets.GKE_ZONE }} --project ${{ secrets.GCP_PROJECT }}
 
-     - name: Deploy Blue
-       run: |
-        kubectl apply -f k8s/overlays/blue
-        kubectl apply -f k8s/base
+       - name: Set up Cloud SDK and install gke-gcloud-auth-plugin
+         uses: google-github-actions/setup-gcloud@v1
+         with:
+          project_id: '${{ secrets.GCP_PROJECT_ID }}'  # Optional: Set project ID if needed
+       - run: |
+          gcloud components install gke-gcloud-auth-plugin
+          gcloud container clusters get-credentials ${{ secrets.GCP_CLUSTER}} --region ${{ secrets.GCP_REGION}} --project ${{ secrets.GCP_PROJECT}}
+        
 
-     - name: Deploy Green
-       run: |
-        kubectl apply -f k8s/overlays/green
+       - name: Get GKE credentials
+         run: |
+          gcloud container clusters get-credentials ${{ secrets.GCP_CLUSTER}} --region ${{ secrets.GCP_REGION}}
+        
+       - name: Deploy Blue
+         run: |
+          sudo apt-get install kubectl
+          kubectl apply -f ./app/k8s/overlays/blue
+          kubectl apply -f ./app/k8s/base
 
-     - name: Switch Traffic to Green
-       run: |
-        kubectl patch service app -p '{"spec":{"selector":{"app":"app","version":"green"}}}'
+       - name: Deploy Green
+         run: |
+          kubectl apply -f ./app/k8s/overlays/green
+
+       - name: Switch Traffic to Green
+         run: |
+          kubectl patch service app -p '{"spec":{"selector":{"app":"app","version":"green"}}}'
