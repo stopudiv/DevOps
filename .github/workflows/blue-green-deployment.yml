@@ -141,7 +141,7 @@ jobs:
     
     - name: Deploy updated Kubernetes resources
       run: |
-        kubectl apply -k k8s/ 
+        kubectl apply -k ./app/k8s/ 
    
     
     - name: Remove old namespace
@@ -162,6 +162,4 @@ jobs:
       uses: ad-m/github-push-action@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }} 
-    - name: Switch Traffic to Green
-      run: |
-        kubectl patch service app -p '{"spec":{"selector":{"app":"app","version":"green"}}}'
+    
