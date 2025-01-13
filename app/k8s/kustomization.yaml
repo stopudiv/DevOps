@@ -4,7 +4,7 @@ resources:
 - deployment.yaml
 - service.yaml
 - ingress.yaml
-namespace: hello-gitops
+namespace: app
 images:
 - name: hello-gitops
   newName: stopduiv/hello-gitops
