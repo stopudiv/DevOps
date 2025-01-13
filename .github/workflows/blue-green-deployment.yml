@@ -199,7 +199,7 @@ jobs:
     - run:
         git remote set-url --push origin https://stopudiv:${{ secrets.TOKEN_GITHUB }}@github.com/your/repo
         git config user.email "ogrytsenko@gmail.com"
-        git config user.name "OLga Grytsenko"
+        git config user.name "Olga Grytsenko"
         git add .
         git commit -m "create version file"
         git push
