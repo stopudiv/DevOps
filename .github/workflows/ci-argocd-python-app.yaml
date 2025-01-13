@@ -99,11 +99,30 @@ jobs:
        kustomize edit set image hello-gitops=$DOCKER_USERNAME/hello-gitops:$GITHUB_SHA
        cat kustomization.yaml
         
-    - name: Commit files
+    - name: Stash any local changes
+      run: |
+        git stash --include-untracked
+
+    - name: Pull changes from remote
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git commit -am "Bump docker tag"
+        git pull --rebase origin main
+
+    - name: Apply stashed changes (if any)
+      run: |
+        git stash pop || echo "No stashed changes to apply"
+        
+    - name: Commit changes if any
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        if git diff --quiet; then
+          echo "No changes to commit."
+        else
+          git add .
+          git commit -m "Bump docker tag"
+        fi
 
     - name: Push changes
       uses: ad-m/github-push-action@master
