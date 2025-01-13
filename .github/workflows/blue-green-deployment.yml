@@ -97,10 +97,10 @@ jobs:
         credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
     - name: Set up Cloud SDK and install gke-gcloud-auth-plugin
-       uses: google-github-actions/setup-gcloud@v1
-       with:
+      uses: google-github-actions/setup-gcloud@v1
+      with:
         project_id: '${{ secrets.GCP_PROJECT_ID }}'  # Optional: Set project ID if needed
-     - run: |
+    - run: |
         gcloud components install gke-gcloud-auth-plugin
         gcloud container clusters get-credentials ${{ secrets.GCP_CLUSTER}} --region ${{ secrets.GCP_REGION}} --project ${{ secrets.GCP_PROJECT}}
 
