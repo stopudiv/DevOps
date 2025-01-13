@@ -6,6 +6,9 @@ resources:
 - ingress.yaml
 namespace: app
 images:
+- name: app
+  newName: stopudiv/app
+  newTag: 49ca894a31cbbb729cfc913c1328c26fd7845676
 - name: hello-gitops
   newName: stopduiv/hello-gitops
   newTag: newesttag

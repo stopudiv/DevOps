@@ -11,5 +11,5 @@ spec:
       targetPort: http
   selector:
     app: app
-    version: "v2.0.1"
+    version: v2.0.2
   type: ClusterIP
