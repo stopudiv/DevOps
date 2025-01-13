@@ -11,4 +11,4 @@ images:
   newTag: 552419886b6b19de82ee59cca67e5a6417bca04e
 - name: hello-gitops
   newName: stopudiv/hello-gitops
-  newTag: b0aa27b1c8d867f1963af22c3ec2fe23d4e74171
+  newTag: 377cf6ba1abb9059ce717684b75438454750c7f0
