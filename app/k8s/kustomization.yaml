@@ -4,11 +4,11 @@ resources:
 - deployment.yaml
 - service.yaml
 - ingress.yaml
-namespace: app
+namespace: hello-gitops
 images:
 - name: app
   newName: stopudiv/app
   newTag: 552419886b6b19de82ee59cca67e5a6417bca04e
 - name: hello-gitops
-  newName: stopduiv/hello-gitops
-  newTag: newesttag
+  newName: stopudiv/hello-gitops
+  newTag: e64d5e5855aa17575c2ca11d8100679bdca20e68
