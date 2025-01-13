@@ -184,7 +184,7 @@ jobs:
         echo "Updating service.yaml with version $newVersion..."
         sed -i "s/version: .*/version: $newVersion/" app/k8s/service.yaml
         echo "Updated service.yaml:"
-        cat github-actions-samples/k8s/service.yaml
+        cat ./app/k8s/service.yaml
  
     - name: Commit files
       run: |
